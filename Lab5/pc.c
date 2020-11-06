@@ -27,8 +27,9 @@ sem_t mutex;
 int finishProduct = 0;
 int finishCustom = 0;
 
+struct Product** sharedPool;
 // struct Product** sharedPool = (struct Product**)malloc(sizeof(struct Product*) * SHARED_POOL_SIZE);
-struct Product*[SHARED_POOL_SIZE]; 
+// struct Product[SHARED_POOL_SIZE] sharedPool; 
 int tail = 0;
 
 struct Product {
@@ -41,7 +42,7 @@ struct Product {
 
 struct Product* createProduct(int producer) {
     struct Product* pointer = (struct Product*)malloc(sizeof(struct Product));
-    pointer->ID;
+    pointer->ID = 0;
     pointer->producer = producer;
     pointer->createTime = time(NULL);
     pointer->bufferID = 0;
@@ -62,6 +63,7 @@ void echoSharedPool() {
     for(; cursor < tail; cursor++) {
         echoProduct(sharedPool[cursor]);
     }
+    printf("______________________\n");
     printf("\n");
 }
 
@@ -82,9 +84,12 @@ void runProducer(int ID) {
             return;
         }
         else {
+            product->ID = finishProduct;
             finishProduct++;
             sem_wait(&empty);
+            echoSharedPool();
             sharedPool[tail++] = product;
+            echoSharedPool();
             sem_post(&full);
             sem_post(&empty);
         }
@@ -122,6 +127,7 @@ srand((unsigned)(time(NULL)));
 }
 
 int main(void) {
+    sharedPool = (struct Product**)malloc(sizeof(struct Product*) * SHARED_POOL_SIZE);
     int err = 0;
     err = sem_init(&finishProductMutex, 0, 1);
     if (NIL != err) {
@@ -165,11 +171,12 @@ int main(void) {
         pthread_join(pids[cursor], &ret);
     }
     free(pids);
-    // free(sharedPool);
+    free(sharedPool);
     sem_destroy(&empty);
     sem_destroy(&full);
     sem_destroy(&mutex);
     sem_destroy(&finishCustomMutex);
     sem_destroy(&finishProductMutex);
+    printf("Exit pragram successfully.\n");
     return 0;
 }
