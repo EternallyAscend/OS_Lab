@@ -1,4 +1,7 @@
 #/bin/bash
-gcc pc.c -o pc -lpthread
-./pc
+if [ -f "pcp" ]; then
+	rm pcp -f
+fi
+gcc mutexThread.c -o pcp -lpthread -w
+./pcp
 

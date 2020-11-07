@@ -12,11 +12,21 @@
 #define SHARED_POOL_SIZE 3
 #define NIL 0
 
-// FinishProduct 15 -> stop producers.
-// FinishCustom 15 -> stop customers.
+// FinishProduct 0 to MAX_SIZE -> stop producers.
+// FinishCustom 0 to MAX_SIZE -> stop customers.
+int finishProduct = 0;
+int finishCustom = 0;
+
+// Threads 0 -> PRODUCER_NUMBER + CUSTOMER_NUMBER count thread numbers, notice main thread exit.
+int threads = 0;
+
+// FinishProductMutex -> protect finishProduct.
+// FinsihCustomMutex -> protect finishCustom.
 // Full 0 -> protect customer.
 // Empty 3 -> protect producer.
 // Mutex -> protect sharePool[SHARED_POOL_SIZE] and tail.
+// ThreadMutex -> protect threads counter.
+// stopMutex -> block main thread.
 sem_t finishProductMutex;
 sem_t finishCustomMutex;
 sem_t full;
@@ -25,13 +35,8 @@ sem_t mutex;
 sem_t threadMutex;
 sem_t stopMutex;
 
-int finishProduct = 0;
-int finishCustom = 0;
-
 struct Product** sharedPool;
 int tail = 0;
-
-int threads = 0;
 
 struct Product {
     int ID;
@@ -68,7 +73,7 @@ void echoSharedPool() {
         }
     }
     else {
-        printf("Empty SharedPool.\n");
+        printf(" Empty SharedPool.\n");
     }
     printf("============================================\n");
 }
@@ -87,13 +92,13 @@ void *runProducer(int ID) {
     while(1) {
         struct Product* product = createProduct(ID);
         sem_wait(&finishProductMutex);
-        printf("P%d Lock. Current: %d.\n", ID, finishProduct);
+        // printf("P%d Lock. Current: %d.\n", ID, finishProduct);
         if (MAX_SIZE == finishProduct) {
             sem_post(&finishProductMutex);
-            printf("P%d Unlock without create.\n", ID);
+            printf("P%d exit without create.\n", ID);
             free(product);
-            // pthread_exit(0);
             exitThread();
+            // pthread_exit(0);
             return 0;
         }
         else {
@@ -109,11 +114,10 @@ void *runProducer(int ID) {
             echoSharedPool();
             sem_post(&mutex);
             sem_post(&full);
-            // sem_post(&empty);
         }
         sem_post(&finishProductMutex);
-        printf("P%d Unlock.\n", ID);
-        sleep(rand()%4+1);
+        // printf("P%d Unlock.\n", ID);
+        sleep(rand() % 4 + 1);
     }
 }
 
@@ -121,10 +125,10 @@ void *runCustomer(int ID) {
     srand((unsigned)(time(NULL)));
     while(1) {
         sem_wait(&finishCustomMutex);
-        printf("C%d Lock. \n", ID);
+        // printf("C%d Lock. \n", ID);
         if (MAX_SIZE == finishCustom) {
             sem_post(&finishCustomMutex);
-            printf("C%d Unlock without Purchase.\n", ID);
+            printf("C%d exit without Purchase.\n", ID);
             exitThread();
             // pthread_exit(0);
             return 0;
@@ -142,11 +146,10 @@ void *runCustomer(int ID) {
             echoSharedPool();
             sem_post(&mutex);
             sem_post(&empty);
-            // sem_post(&full);
         }
         sem_post(&finishCustomMutex);
-        printf("C%d Unlock.\n", ID);
-        sleep(rand()%4+1);
+        // printf("C%d Unlock.\n", ID);
+        sleep(rand() % 4 + 1);
     }
 }
 
@@ -188,41 +191,30 @@ int main(void) {
         exit(-1);
     }
     sharedPool = (struct Product**)malloc(sizeof(struct Product*) * SHARED_POOL_SIZE);
-    pthread_t** pids = (pthread_t*)malloc(sizeof(pthread_t*) * (PRODUCER_NUMBER + CUSTOMER_NUMBER));
-    void** rets = (void**)malloc(sizeof(void*) * (PRODUCER_NUMBER + CUSTOMER_NUMBER));
     int cursor = 0;
     for (; cursor < PRODUCER_NUMBER; cursor++) {
         pthread_t pid;
-        pids[cursor] = &pid;
         pthread_create(&pid, NULL, runProducer, cursor);
         sem_wait(&threadMutex);
         threads++;
         sem_post(&threadMutex);
-        // pids[cursor] = (pthread_t*)malloc(sizeof(pthread_t));
-        // pthread_create(pids[cursor], NULL, runProducer, cursor);
     }
     for (cursor = 0; cursor < CUSTOMER_NUMBER; cursor++) {
         pthread_t pid;
-        pids[cursor + PRODUCER_NUMBER] = &pid;
         pthread_create(&pid, NULL, runCustomer, cursor);
         sem_wait(&threadMutex);
         threads++;
         sem_post(&threadMutex);
-        // pids[cursor + PRODUCER_NUMBER] = (pthread_t*)malloc(sizeof(pthread_t));
-        // pthread_create(pids[cursor + PRODUCER_NUMBER], NULL, runCustomer, cursor);
     }
-    // for (cursor = 0; cursor < PRODUCER_NUMBER + CUSTOMER_NUMBER; cursor++) {
-    //     pthread_join(pids[cursor], &(rets[cursor]));
-    // }
     sem_wait(&stopMutex);
-    free(pids);
     free(sharedPool);
-    sem_destroy(&empty);
+    sem_destroy(&finishProductMutex);
+    sem_destroy(&finishCustomMutex);
     sem_destroy(&full);
+    sem_destroy(&empty);
     sem_destroy(&mutex);
     sem_destroy(&threadMutex);
-    sem_destroy(&finishCustomMutex);
-    sem_destroy(&finishProductMutex);
+    sem_destroy(&stopMutex);
     printf("----------------------------------------\nExit pragram successfully.\n");
     return 0;
 }
