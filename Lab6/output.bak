@@ -1,0 +1,100 @@
+P1 start  to eat 1.
+P4 start  to eat 1.
+P1 finish eating 1.
+P4 finish eating 1.
+P2 start  to eat 1.
+P0 start  to eat 1.
+P2 finish eating 1.
+P0 finish eating 1.
+P3 start  to eat 1.
+P1 start  to eat 2.
+P0 start  to eat 2.
+P3 finish eating 1.
+P4 start  to eat 2.
+P1 finish eating 2.
+P2 start  to eat 2.
+P0 finish eating 2.
+P0 start  to eat 3.
+P2 finish eating 2.
+P4 finish eating 2.
+P1 start  to eat 3.
+P3 start  to eat 2.
+P3 finish eating 2.
+P4 start  to eat 3.
+P1 finish eating 3.
+P2 start  to eat 3.
+P0 finish eating 3.
+P4 finish eating 3.
+P2 finish eating 3.
+P1 start  to eat 4.
+P3 start  to eat 3.
+P0 start  to eat 4.
+P1 finish eating 4.
+P3 finish eating 3.
+P2 start  to eat 4.
+P0 finish eating 4.
+P4 start  to eat 4.
+P2 finish eating 4.
+P1 start  to eat 5.
+P0 start  to eat 5.
+P1 finish eating 5.
+P2 start  to eat 5.
+P4 finish eating 4.
+P2 finish eating 5.
+P3 start  to eat 4.
+P0 finish eating 5.
+P1 start  to eat 6.
+P0 start  to eat 6.
+P3 finish eating 4.
+P4 start  to eat 5.
+P1 finish eating 6.
+P2 start  to eat 6.
+P4 finish eating 5.
+P2 finish eating 6.
+P0 finish eating 6.
+P3 start  to eat 5.
+P1 start  to eat 7.
+P0 start  to eat 7.
+P3 finish eating 5.
+P1 finish eating 7.
+P4 start  to eat 6.
+P2 start  to eat 7.
+P0 finish eating 7.
+P4 finish eating 6.
+P0 start  to eat 8.
+P2 finish eating 7.
+P3 start  to eat 6.
+P0 finish eating 8.
+P3 finish eating 6.
+P4 start  to eat 7.
+P1 start  to eat 8.
+P0 start  to eat 9.
+P4 finish eating 7.
+P1 finish eating 8.
+P3 start  to eat 7.
+P0 finish eating 9.
+P1 start  to eat 9.
+P3 finish eating 7.
+P4 start  to eat 8.
+P0 start  to eat 10.
+P1 finish eating 9.
+P2 start  to eat 8.
+P4 finish eating 8.
+P0 finish eating 10.
+P2 finish eating 8.
+P1 start  to eat 10.
+P3 start  to eat 8.
+P1 finish eating 10.
+P3 finish eating 8.
+P2 start  to eat 9.
+P4 start  to eat 9.
+P4 finish eating 9.
+P2 finish eating 9.
+P3 start  to eat 9.
+P3 finish eating 9.
+P2 start  to eat 10.
+P4 start  to eat 10.
+P2 finish eating 10.
+P4 finish eating 10.
+P3 start  to eat 10.
+Finish, exit.
