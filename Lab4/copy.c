@@ -91,7 +91,7 @@ int copyDir(char* origin, char* target) {
             free(subDirOrigin);
             free(subDirTarget);
         }
-        else if (8 == (int)ptr->d_type) {
+        else {
             char* subPathOrigin = (char*)malloc(sizeof(char) * NAME_LENGTH);
             strcpy(subPathOrigin, origin);            
             strcat(subPathOrigin, "/");
