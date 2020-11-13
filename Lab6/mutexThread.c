@@ -50,8 +50,8 @@ void* runPhilosophers(int ID) {
         sem_post(&shareMutex);
         sem_wait(eatMutexs[ID]);
         printf("P%d start  to eat %d.\n", ID, 11 - counter);
-        sleep(rand() % 8 + 2);
-        // sleep(rand() % 2 + 1);
+        // sleep(rand() % 8 + 2);
+        sleep(rand() % 2 + 1);
         printf("P%d finish eating %d.\n", ID, 11 - counter);
         sem_wait(&shareMutex);
         // status[ID] = 2;
@@ -62,8 +62,8 @@ void* runPhilosophers(int ID) {
         counter--;
         if (counter != 0) {
             // Thinking.
-            sleep(rand() % 5 + 3);
-            // sleep(rand() % 1 + 1);
+            // sleep(rand() % 5 + 3);
+            sleep(rand() % 1 + 1);
             // status[ID] = 1;
             sem_wait(&shareMutex);
             status[ID] = HUNGRY;
@@ -99,8 +99,12 @@ int main(void) {
     }
     for (cursor = 0; cursor < NUMBER; cursor++) {
         pthread_join(*(threadPool[cursor]), NULL);
+        free(threadPool[cursor]);
+        sem_destroy(&(eatMutexs[cursor]));
     }
     printf("Finish, exit.\n");
+    sem_destroy(&shareMutex);
+    free(eatMutexs);
     free(threadPool);
     free(status);
 }
