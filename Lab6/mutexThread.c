@@ -12,6 +12,10 @@
 #define LEFT (ID+NUMBER-1)%NUMBER
 #define RIGHT (ID+1)%NUMBER
 
+#define THINKING 2
+#define HUNGRY 1
+#define EATING 0
+
 // int number = 5;
 // int* forks = NULL;
 int* status = NULL; // 2 means thinking, 1 means hungry, 0 means eating.
@@ -19,10 +23,21 @@ int* status = NULL; // 2 means thinking, 1 means hungry, 0 means eating.
 sem_t shareMutex;
 sem_t** eatMutexs;
 
+void displayStatus() {
+    int cursor = 0;
+    for(; cursor < NUMBER; cursor++) {
+        printf(" %d,", status[cursor]);
+    }
+    printf("\n");
+}
+
 void test(int ID) {
-    if (status[ID] == 1 && status[LEFT] != 0 && status[RIGHT] != 0) {
+    displayStatus();
+    // if (status[ID] == 1 && status[LEFT] != 0 && status[RIGHT] != 0) {
+    if (status[ID] == HUNGRY && status[LEFT] != EATING && status[RIGHT] != EATING) {
         printf("Left %d, middle %d, right %d.\n", LEFT, ID, RIGHT);
-        status[ID] = 0;
+        // status[ID] = 0;
+        status[ID] = EATING;
         sem_post(eatMutexs[ID]);
     }
 }
@@ -41,7 +56,8 @@ void* runPhilosophers(int ID) {
         sleep(rand() % 2 + 1);
         printf("P%d finish eating %d.\n", ID, 11 - counter);
         sem_wait(&shareMutex);
-        status[ID] = 2;
+        // status[ID] = 2;
+        status[ID] = THINKING;
         test(LEFT);
         test(RIGHT);
         sem_post(&shareMutex);
@@ -50,7 +66,8 @@ void* runPhilosophers(int ID) {
             // Thinking.
             // sleep(rand() % 5 + 3);
             sleep(rand() % 1 + 1);
-            status[ID] = 1;
+            // status[ID] = 1;
+            status[ID] = HUNGRY;
         }
     }
     return 0;
@@ -114,3 +131,291 @@ int main(void) {
 // sem_t mutex;
 // sem_t threadMutex;
 // sem_t stopMutex;
+
+/*
+ 1, 1, 1, 1, 1,
+Left 4, middle 0, right 1.
+ 0, 1, 1, 1, 1,
+P0 start  to eat 1.
+ 0, 1, 1, 1, 1,
+ 0, 1, 1, 1, 1,
+Left 1, middle 2, right 3.
+P2 start  to eat 1.
+ 0, 1, 0, 1, 1,
+P2 finish eating 1.
+ 0, 1, 2, 1, 1,
+ 0, 1, 2, 1, 1,
+Left 2, middle 3, right 4.
+P3 start  to eat 1.
+P0 finish eating 1.
+ 2, 1, 2, 0, 1,
+ 2, 1, 2, 0, 1,
+Left 0, middle 1, right 2.
+P1 start  to eat 1.
+ 2, 0, 1, 0, 1,
+P3 finish eating 1.
+ 2, 0, 1, 2, 1,
+ 2, 0, 1, 2, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 1.
+ 1, 0, 1, 2, 0,
+P0 start  to eat 2.
+ 1, 0, 1, 1, 0,
+P1 finish eating 1.
+ 1, 2, 1, 1, 0,
+ 1, 2, 1, 1, 0,
+Left 1, middle 2, right 3.
+P2 start  to eat 2.
+P4 finish eating 1.
+ 1, 2, 0, 1, 2,
+ 1, 2, 0, 1, 2,
+Left 4, middle 0, right 1.
+P0 finish eating 2.
+ 2, 2, 0, 1, 2,
+ 2, 2, 0, 1, 2,
+ 2, 1, 0, 1, 2,
+ 2, 1, 0, 1, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 2.
+P2 finish eating 2.
+ 2, 1, 2, 1, 0,
+Left 0, middle 1, right 2.
+ 1, 0, 2, 1, 0,
+P1 start  to eat 2.
+ 1, 0, 2, 1, 0,
+P0 start  to eat 3.
+ 1, 0, 1, 1, 0,
+P4 finish eating 2.
+ 1, 0, 1, 1, 2,
+Left 2, middle 3, right 4.
+ 1, 0, 1, 0, 2,
+P3 start  to eat 2.
+P1 finish eating 2.
+ 1, 2, 1, 0, 2,
+Left 4, middle 0, right 1.
+ 0, 2, 1, 0, 2,
+P0 finish eating 3.
+ 2, 2, 1, 0, 2,
+ 2, 2, 1, 0, 2,
+ 2, 2, 1, 0, 1,
+P3 finish eating 2.
+ 2, 2, 1, 2, 1,
+Left 1, middle 2, right 3.
+ 2, 2, 0, 2, 1,
+Left 3, middle 4, right 0.
+P2 start  to eat 3.
+P4 start  to eat 3.
+ 2, 1, 0, 2, 0,
+ 1, 1, 0, 2, 0,
+P0 start  to eat 4.
+ 1, 1, 0, 1, 0,
+P2 finish eating 3.
+ 1, 1, 2, 1, 0,
+Left 0, middle 1, right 2.
+ 1, 0, 2, 1, 0,
+P1 start  to eat 3.
+P0 finish eating 4.
+ 2, 0, 2, 1, 0,
+ 2, 0, 2, 1, 0,
+P4 finish eating 3.
+ 2, 0, 2, 1, 2,
+Left 2, middle 3, right 4.
+ 2, 0, 2, 0, 2,
+P3 start  to eat 3.
+ 2, 0, 1, 0, 2,
+ 1, 0, 1, 0, 2,
+P0 start  to eat 5.
+ 1, 0, 1, 0, 1,
+P3 finish eating 3.
+ 1, 0, 1, 2, 1,
+ 1, 0, 1, 2, 1,
+P1 finish eating 3.
+Left 3, middle 4, right 0.
+ 1, 2, 1, 2, 0,
+ 1, 2, 1, 2, 0,
+Left 1, middle 2, right 3.
+P4 start  to eat 4.
+P2 start  to eat 4.
+P0 finish eating 5.
+ 2, 2, 0, 2, 0,
+ 2, 2, 0, 2, 0,
+ 2, 2, 0, 1, 0,
+ 2, 1, 0, 1, 0,
+ 1, 1, 0, 1, 0,
+P0 start  to eat 6.
+P4 finish eating 4.
+ 1, 1, 0, 1, 2,
+ 1, 1, 0, 1, 2,
+P2 finish eating 4.
+Left 4, middle 0, right 1.
+ 0, 1, 2, 1, 2,
+ 0, 1, 2, 1, 2,
+Left 2, middle 3, right 4.
+P3 start  to eat 4.
+P0 finish eating 6.
+ 2, 1, 2, 0, 2,
+ 2, 1, 2, 0, 2,
+Left 0, middle 1, right 2.
+P1 start  to eat 4.
+ 2, 0, 2, 0, 1,
+ 2, 0, 1, 0, 1,
+ 1, 0, 1, 0, 1,
+P0 start  to eat 7.
+P1 finish eating 4.
+ 1, 2, 1, 0, 1,
+Left 4, middle 0, right 1.
+ 0, 2, 1, 0, 1,
+P3 finish eating 4.
+ 0, 2, 1, 2, 1,
+Left 1, middle 2, right 3.
+ 0, 2, 0, 2, 1,
+P2 start  to eat 5.
+P0 finish eating 7.
+ 2, 2, 0, 2, 1,
+Left 3, middle 4, right 0.
+ 2, 2, 0, 2, 0,
+ 2, 1, 0, 2, 0,
+P4 start  to eat 5.
+ 2, 1, 0, 1, 0,
+ 1, 1, 0, 1, 0,
+P0 start  to eat 8.
+P4 finish eating 5.
+ 1, 1, 0, 1, 2,
+ 1, 1, 0, 1, 2,
+Left 4, middle 0, right 1.
+P2 finish eating 5.
+ 0, 1, 2, 1, 2,
+ 0, 1, 2, 1, 2,
+Left 2, middle 3, right 4.
+P3 start  to eat 5.
+P0 finish eating 8.
+ 2, 1, 2, 0, 2,
+ 2, 1, 2, 0, 2,
+Left 0, middle 1, right 2.
+P1 start  to eat 5.
+ 2, 0, 2, 0, 1,
+ 2, 0, 1, 0, 1,
+ 1, 0, 1, 0, 1,
+P0 start  to eat 9.
+P3 finish eating 5.
+ 1, 0, 1, 2, 1,
+ 1, 0, 1, 2, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 6.
+P1 finish eating 5.
+ 1, 2, 1, 2, 0,
+ 1, 2, 1, 2, 0,
+Left 1, middle 2, right 3.
+P2 start  to eat 6.
+ 1, 2, 0, 1, 0,
+P0 finish eating 9.
+ 1, 1, 0, 1, 0,
+ 2, 1, 0, 1, 0,
+ 2, 1, 0, 1, 0,
+P2 finish eating 6.
+ 2, 1, 2, 1, 0,
+Left 0, middle 1, right 2.
+ 2, 0, 2, 1, 0,
+P1 start  to eat 6.
+P4 finish eating 6.
+ 2, 0, 2, 1, 2,
+Left 2, middle 3, right 4.
+ 2, 0, 2, 0, 2,
+P3 start  to eat 6.
+ 1, 0, 1, 0, 2,
+P0 start  to eat 10.
+ 1, 0, 1, 0, 1,
+ 1, 0, 1, 0, 1,
+P1 finish eating 6.
+ 1, 2, 1, 0, 1,
+Left 4, middle 0, right 1.
+ 0, 2, 1, 0, 1,
+P0 finish eating 10.
+ 2, 2, 1, 0, 1,
+ 2, 2, 1, 0, 1,
+P3 finish eating 6.
+ 2, 2, 1, 2, 1,
+Left 1, middle 2, right 3.
+ 2, 2, 0, 2, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 7.
+P2 start  to eat 7.
+ 2, 1, 0, 2, 0,
+P4 finish eating 7.
+ 2, 1, 0, 1, 0,
+P2 finish eating 7.
+ 2, 1, 0, 1, 2,
+ 2, 1, 0, 1, 2,
+ 2, 1, 2, 1, 2,
+Left 0, middle 1, right 2.
+ 2, 0, 2, 1, 2,
+P1 start  to eat 7.
+Left 2, middle 3, right 4.
+P3 start  to eat 7.
+ 2, 0, 1, 0, 1,
+P1 finish eating 7.
+ 2, 0, 1, 0, 1,
+ 2, 2, 1, 0, 1,
+ 2, 2, 1, 0, 1,
+P3 finish eating 7.
+ 2, 2, 1, 2, 1,
+Left 1, middle 2, right 3.
+ 2, 2, 0, 2, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 8.
+P2 start  to eat 8.
+ 2, 1, 0, 2, 0,
+ 2, 1, 0, 1, 0,
+P4 finish eating 8.
+ 2, 1, 0, 1, 2,
+ 2, 1, 0, 1, 2,
+P2 finish eating 8.
+ 2, 1, 2, 1, 2,
+Left 0, middle 1, right 2.
+ 2, 0, 2, 1, 2,
+Left 2, middle 3, right 4.
+P1 start  to eat 8.
+P3 start  to eat 8.
+ 2, 0, 2, 0, 1,
+ 2, 0, 1, 0, 1,
+P1 finish eating 8.
+ 2, 2, 1, 0, 1,
+ 2, 2, 1, 0, 1,
+P3 finish eating 8.
+ 2, 2, 1, 2, 1,
+Left 1, middle 2, right 3.
+ 2, 2, 0, 2, 1,
+Left 3, middle 4, right 0.
+P2 start  to eat 9.
+P4 start  to eat 9.
+ 2, 1, 0, 2, 0,
+ 2, 1, 0, 1, 0,
+P4 finish eating 9.
+ 2, 1, 0, 1, 2,
+ 2, 1, 0, 1, 2,
+P2 finish eating 9.
+ 2, 1, 2, 1, 2,
+Left 0, middle 1, right 2.
+ 2, 0, 2, 1, 2,
+Left 2, middle 3, right 4.
+P1 start  to eat 9.
+P3 start  to eat 9.
+ 2, 0, 2, 0, 1,
+ 2, 0, 1, 0, 1,
+P3 finish eating 9.
+ 2, 0, 1, 2, 1,
+ 2, 0, 1, 2, 1,
+Left 3, middle 4, right 0.
+P4 start  to eat 10.
+P1 finish eating 9.
+ 2, 2, 1, 2, 0,
+ 2, 2, 1, 2, 0,
+Left 1, middle 2, right 3.
+P2 start  to eat 10.
+ 2, 2, 0, 1, 0,
+P4 finish eating 10.
+ 2, 2, 0, 1, 2,
+ 2, 2, 0, 1, 2,
+Finish, exit.
+
+*/
