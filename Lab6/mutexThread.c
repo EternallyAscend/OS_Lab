@@ -16,8 +16,6 @@
 #define HUNGRY 1
 #define EATING 0
 
-// int number = 5;
-// int* forks = NULL;
 int* status = NULL; // 2 means thinking, 1 means hungry, 0 means eating.
 
 sem_t shareMutex;
@@ -32,10 +30,10 @@ void displayStatus() {
 }
 
 void test(int ID) {
-    displayStatus();
+    // displayStatus();
     // if (status[ID] == 1 && status[LEFT] != 0 && status[RIGHT] != 0) {
     if (status[ID] == HUNGRY && status[LEFT] != EATING && status[RIGHT] != EATING) {
-        printf("Left %d, middle %d, right %d.\n", LEFT, ID, RIGHT);
+        // printf("Left %d, middle %d, right %d.\n", LEFT, ID, RIGHT);
         // status[ID] = 0;
         status[ID] = EATING;
         sem_post(eatMutexs[ID]);
@@ -45,7 +43,7 @@ void test(int ID) {
 void* runPhilosophers(int ID) {
     int counter = 10;
     srand((unsigned)(time(NULL)));
-    while(counter) {
+    while(counter != 0) {
         // Eating.
         sem_wait(&shareMutex);
         test(ID);
@@ -61,13 +59,17 @@ void* runPhilosophers(int ID) {
         test(LEFT);
         test(RIGHT);
         sem_post(&shareMutex);
+        // printf("P%d before %d, after ", ID, counter);
         counter--;
-        if (counter) {
+        // printf("%d.\n",counter);
+        if (counter != 0) {
             // Thinking.
             // sleep(rand() % 5 + 3);
             sleep(rand() % 1 + 1);
             // status[ID] = 1;
+            sem_wait(&shareMutex);
             status[ID] = HUNGRY;
+            sem_post(&shareMutex);
         }
     }
     return 0;
@@ -81,10 +83,8 @@ int main(void) {
         printf("Semaphore initialization failed.\n");
         exit(-1);
     }
-
-    // forks = (int*)malloc(sizeof(int) * NUMBER);
     status = (int*)malloc(sizeof(int) * NUMBER);
-    pthread_t** threadPool = (pthread_t**)malloc(sizeof(pthread_t*));
+    pthread_t** threadPool = (pthread_t**)malloc(sizeof(pthread_t*) * NUMBER);
     int cursor = 0;
     for(; cursor < NUMBER; cursor++) {
         eatMutexs[cursor] = (sem_t*)malloc(sizeof(sem_t));
@@ -96,12 +96,11 @@ int main(void) {
         status[cursor] = 1;
     }
     for(cursor = 0; cursor < NUMBER; cursor++) {
-        pthread_t pid;
-        threadPool[cursor] = &pid;
-        pthread_create(&pid, NULL, runPhilosophers, cursor);
+        threadPool[cursor] = (pthread_t*)malloc(sizeof(pthread_t));
+        pthread_create(threadPool[cursor], NULL, runPhilosophers, cursor);
     }
-    for(; cursor > 0; cursor--) {
-        pthread_join(*threadPool[cursor - 1], NULL);
+    for (cursor = 0; cursor < NUMBER; cursor++) {
+        pthread_join(*(threadPool[cursor]), NULL);
     }
     printf("Finish, exit.\n");
     free(threadPool);
